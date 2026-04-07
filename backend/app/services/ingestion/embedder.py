@@ -1,26 +1,20 @@
-import uuid
 from pathlib import Path
 
 from app.services.ingestion.extractor import extract_text_from_pdf
 from app.services.ingestion.chunker import chunk_text
-from app.services.search.vector_search import get_collection
+from app.services.search.vector_search import clear_file, add_documents
 
 
 def ingest_pdf(pdf_path: str) -> int:
-    """Ingest a single PDF into the vector store.
+    """Ingest a single PDF into the search index.
 
-    Deletes any previously ingested chunks for this file before re-ingesting.
+    Removes any previously ingested chunks for this file first.
 
     Returns:
         Number of chunks ingested.
     """
-    collection = get_collection()
     filename = Path(pdf_path).name
-
-    # Remove stale chunks for this file
-    existing = collection.get(where={"filename": filename})
-    if existing["ids"]:
-        collection.delete(ids=existing["ids"])
+    clear_file(filename)
 
     pages = extract_text_from_pdf(pdf_path)
     all_chunks: list[dict] = []
@@ -30,9 +24,5 @@ def ingest_pdf(pdf_path: str) -> int:
     if not all_chunks:
         return 0
 
-    collection.add(
-        documents=[c["text"] for c in all_chunks],
-        metadatas=[{"page": c["page"], "filename": c["filename"]} for c in all_chunks],
-        ids=[str(uuid.uuid4()) for _ in all_chunks],
-    )
+    add_documents(all_chunks)
     return len(all_chunks)
