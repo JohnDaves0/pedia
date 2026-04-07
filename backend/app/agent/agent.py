@@ -30,8 +30,9 @@ def run_agent(message: str, session_id: str) -> tuple[str, list[Source]]:
     history.append({"role": "user", "content": message})
 
     all_sources: list[Source] = []
+    max_iterations = 3
 
-    while True:
+    for _ in range(max_iterations):
         response = client.messages.create(
             model=settings.claude_model,
             max_tokens=1024,
@@ -80,6 +81,11 @@ def run_agent(message: str, session_id: str) -> tuple[str, list[Source]]:
                     )
 
             history.append({"role": "user", "content": tool_results})
+
+    # Fallback if max iterations reached without a final response
+    fallback = "I wasn't able to find a complete answer within the allowed steps. Please try rephrasing your question."
+    history.append({"role": "assistant", "content": fallback})
+    return fallback, []
 
         else:
             # Final response — extract text
