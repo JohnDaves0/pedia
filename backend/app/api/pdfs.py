@@ -8,7 +8,7 @@ from app.models.schemas import PDFInfo, IngestResponse
 router = APIRouter(prefix="/pdfs", tags=["pdfs"])
 
 
-@router.post("/ingest", response_model=IngestResponse)
+@router.post("/ingest", response_model=IngestResponse, status_code=200)
 def ingest_all_pdfs():
     """Scan the configured PDF folder and ingest all PDFs into the vector store."""
     folder = Path(settings.pdf_folder)
@@ -28,7 +28,7 @@ def ingest_all_pdfs():
     return IngestResponse(ingested=ingested, total_chunks=total_chunks)
 
 
-@router.get("/", response_model=list[PDFInfo])
+@router.get("", response_model=list[PDFInfo])
 def list_pdfs():
     """List PDFs available in the configured folder (not necessarily ingested yet)."""
     folder = Path(settings.pdf_folder)

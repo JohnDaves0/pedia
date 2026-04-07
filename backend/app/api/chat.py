@@ -6,7 +6,7 @@ from app.models.schemas import ChatRequest, ChatResponse
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
-@router.post("/", response_model=ChatResponse)
+@router.post("", response_model=ChatResponse)
 def chat(request: ChatRequest):
     """Send a message and receive an AI response, optionally backed by PDF search."""
     response_text, sources = run_agent(request.message, request.session_id)
