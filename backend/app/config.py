@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     claude_model: str = "claude-sonnet-4-6"
     chunk_size: int = 500   # words per chunk
     chunk_overlap: int = 50  # words of overlap between chunks
-    top_k_results: int = 5
+    top_k_results: int = 3
+    search_excerpt_chars: int = 600  # chars of each chunk sent to Claude
 
     class Config:
         env_file = ".env"

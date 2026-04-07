@@ -6,7 +6,7 @@ from app.agent.prompts import SYSTEM_PROMPT
 from app.models.schemas import Source
 from app.services.search.vector_search import search
 
-client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+client = anthropic.Anthropic(api_key=settings.anthropic_api_key, timeout=55.0)
 
 # In-memory conversation store keyed by session_id.
 # Replace with Redis/DB for production multi-process deployments.
@@ -34,7 +34,7 @@ def run_agent(message: str, session_id: str) -> tuple[str, list[Source]]:
     while True:
         response = client.messages.create(
             model=settings.claude_model,
-            max_tokens=2048,
+            max_tokens=1024,
             system=SYSTEM_PROMPT,
             tools=TOOLS,
             messages=history,
@@ -64,7 +64,8 @@ def run_agent(message: str, session_id: str) -> tuple[str, list[Source]]:
 
                     if chunks:
                         result_text = "\n\n".join(
-                            f"[{c['filename']}, page {c['page']}]\n{c['text']}"
+                            f"[{c['filename']}, page {c['page']}]\n"
+                            f"{c['text'][:settings.search_excerpt_chars]}"
                             for c in chunks
                         )
                     else:
